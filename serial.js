@@ -1,5 +1,4 @@
 const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline');
 
 SerialPort.list().then(function(ports) {
     ports.forEach(function(port) {
@@ -41,6 +40,7 @@ const task = async function test() {
             let temp = dataNew[6];
             let res = dataNew[7] * 256 + dataNew[8];
             console.log('T = ' + temp + ' R = ' + res);
+            console.log(res);
             if (res[4] == 0) {
                 console.log('stop');
                 port.write(stop);
