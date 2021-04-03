@@ -31,6 +31,7 @@ port.pipe(parser);
 
 let finished = false;
 const read = async function func(message) {
+    finished = false;
     port.write(commands.get('start'));
     let prevBuffer;
     for (let i = 0; i < 500; i++) {
@@ -38,6 +39,7 @@ const read = async function func(message) {
         if (finished) {
             port.write(commands.get('stop'));
             console.log('finished');
+            broadCastData([0, 0]);
             break;
         }
         port.write(commands.get(message));
@@ -48,7 +50,9 @@ const read = async function func(message) {
             }
         });
     }
+    console.log('finished');
     port.write(commands.get('stop'));
+    broadCastData([0, 0]);
 }
 
 let server = http.createServer((req, res) => {
@@ -116,6 +120,7 @@ function handleCommand(message) {
 }
 
 function broadCastData(data) {
+    console.log(data);
     if (connections.length > 0) {
         data = JSON.stringify(data)
         for (connection in connections) {
