@@ -2,11 +2,11 @@ const SerialPort = require('serialport');
 
 SerialPort.list().then(function(ports) {
     ports.forEach(function(port) {
-        // console.log("Port: ", port);
+        console.log("Port: ", port);
     });
 });
 
-const port = new SerialPort('COM7', {
+const port = new SerialPort('COM6', {
     baudRate: 115200,
     lock: false
 });
@@ -26,14 +26,14 @@ const sensors = [
 
 const task = async function test() {
     console.log('start');
-    port.write(start);
+    port.write(stop);
     await new Promise(r => setTimeout(r, 2000));
 
     const Delimiter = SerialPort.parsers.Delimiter;
     const parser = new Delimiter({ delimiter: [0x2a], includeDelimiter: true });
     port.pipe(parser);
     for (let i=0; i< 500; i++) {
-        port.write(sensors[0]);
+        port.write(sensors[5]);
         await new Promise(r => setTimeout(r, 2000));
         parser.on('data', (dataNew) => {
             dataNew = new Int32Array(dataNew);
@@ -41,7 +41,7 @@ const task = async function test() {
             let res = dataNew[7] * 256 + dataNew[8];
             console.log('T = ' + temp + ' R = ' + res);
             console.log(res);
-            if (res[4] == 0) {
+            if (dataNew[4] == 0) {
                 console.log('stop');
                 port.write(stop);
                 process.exit(1);

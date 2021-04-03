@@ -2,6 +2,17 @@ const http = require('http');
 const ws = require('ws');
 const SerialPort = require('serialport');
 
+SerialPort.list().then(function(ports) {
+    ports.forEach(function(port) {
+        console.log("Port: ", port);
+    });
+});
+
+const port = new SerialPort('COM7', {
+    baudRate: 115200,
+    lock: false
+});
+
 var commands = new Map();
 commands.set('start', [0x24,0x01,0x4B,0x00,0x4C,0x2a]);
 commands.set('stop', [0x24,0x01,0x53,0x00,0x54,0x2a]);
@@ -14,10 +25,6 @@ commands.set('sensor4', [0x24,0x01,0x47,0x01,0x34,0x7d,0x2a]);
 commands.set('sensor5', [0x24,0x01,0x47,0x01,0x35,0x7e,0x2a]);
 commands.set('sensor6', [0x24,0x01,0x47,0x01,0x36,0x7f,0x2a]);
 
-const port = new SerialPort('COM7', {
-    baudRate: 115200,
-    lock: false
-});
 const Delimiter = SerialPort.parsers.Delimiter;
 const parser = new Delimiter({ delimiter: [0x2a], includeDelimiter: true });
 port.pipe(parser);
@@ -95,15 +102,17 @@ function handleBuffer(buffer) {
 }
 
 function handleCommand(message) {
-    if (!commands.has(message)) {
+    message = JSON.parse(message);
+    let command = message.command;
+    if (!commands.has(command)) {
         console.log('Invalid command');
         return;
     }
-    if (message.startsWith('sensor')) {
-        read(message);
+    if (command.startsWith('sensor')) {
+        read(command);
         return;
     }
-    port.write(commands.get(message));
+    port.write(commands.get(command));
 }
 
 function broadCastData(data) {
