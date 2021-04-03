@@ -16,8 +16,8 @@ const port = new SerialPort('COM7', {
 var commands = new Map();
 commands.set('start', [0x24,0x01,0x4B,0x00,0x4C,0x2a]);
 commands.set('stop', [0x24,0x01,0x53,0x00,0x54,0x2a]);
-commands.set('cooling', [0x24,0x01,0x48,0x00,0x49,0x2a]);
-commands.set('warming', [0x24,0x01,0x4A,0x00,0x4B,0x2a]);
+commands.set('warming', [0x24,0x01,0x48,0x00,0x49,0x2a]);
+commands.set('cooling', [0x24,0x01,0x4A,0x00,0x4B,0x2a]);
 commands.set('sensor1', [0x24,0x01,0x47,0x01,0x31,0x7a,0x2a]);
 commands.set('sensor2', [0x24,0x01,0x47,0x01,0x32,0x7b,0x2a]);
 commands.set('sensor3', [0x24,0x01,0x47,0x01,0x33,0x7c,0x2a]);
@@ -31,7 +31,10 @@ port.pipe(parser);
 
 let finished = false;
 const read = async function func(message) {
+    port.resume();
     finished = false;
+    port.write(commands.get('stop'));
+    await new Promise(r => setTimeout(r, 2000));
     port.write(commands.get('start'));
     let prevBuffer;
     for (let i = 0; i < 500; i++) {
@@ -80,6 +83,7 @@ function handleConnection(client) {
         let position = connections.indexOf(client);
         connections.splice(position, 1);
         if (connections.length === 0) {
+            finished = true;
             port.write(commands.get('stop'));
             port.pause();
         }
@@ -87,22 +91,23 @@ function handleConnection(client) {
 }
 
 function handleBuffer(buffer) {
-    let finished = false;
+    let toggleFinished = false;
     if (buffer !== undefined) {
         let data = new Int32Array(buffer);
         if (data.length < 8) {
-            return finished;
+            return toggleFinished;
+        }
+        if (data[4] == 0) {
+            console.log('data[4] == 0');
+            toggleFinished = true;
+            return toggleFinished;
         }
         let temperature = data[6];
         let resistance = data[7] * 256 + data[8];
         let message = [temperature, resistance];
         broadCastData(message);
-        if (data[4] == 0) {
-            finished = true;
-            return finished;
-        }
     }
-    return finished;
+    return toggleFinished;
 }
 
 function handleCommand(message) {
@@ -114,6 +119,11 @@ function handleCommand(message) {
     }
     if (command.startsWith('sensor')) {
         read(command);
+        return;
+    }
+    if (command == 'stop') {
+        port.write(commands.get(command));
+        finished = true;
         return;
     }
     port.write(commands.get(command));
