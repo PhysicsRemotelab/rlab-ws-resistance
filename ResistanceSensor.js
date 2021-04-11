@@ -37,8 +37,10 @@ class ResistanceSensor {
     }
 
     async write(command) {
-        await this.wait(1000);
-        this.port.write(this.commands.get(command));
+        if (this.port.isOpen) {
+            this.port.write(this.commands.get(command));
+            await this.wait(1000);
+        }
     }
 
     async close() {
