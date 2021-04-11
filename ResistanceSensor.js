@@ -5,12 +5,10 @@ class ResistanceSensor {
         this.port = new SerialPort(com, {
             baudRate: 115200,
             lock: false
-        }, false);
+        });
 
-        const Delimiter = SerialPort.parsers.Delimiter;
-        this.parser = new Delimiter({ delimiter: [0x2a], includeDelimiter: true });
+        this.parser = new SerialPort.parsers.Delimiter({ delimiter: [0x2a], includeDelimiter: true });
         this.port.pipe(this.parser);
-        this.pause();
 
         this.commands = new Map();
         this.commands.set('start', [0x24,0x01,0x4B,0x00,0x4C,0x2a]);
@@ -39,35 +37,24 @@ class ResistanceSensor {
     }
 
     async write(command) {
-        // hack to prevent writing too fast and overwriting previous command
         await this.wait(1000);
         this.port.write(this.commands.get(command));
     }
 
-    resume() {
-        if (this.port.isPaused()) {
-            this.port.resume();
-            console.log('Port resumed');
-        }
-    }
-
-    pause() {
-        if (!this.port.isPaused()) {
-            this.port.pause();
-            console.log('Port paused');
-        }
-    }
-
-    close() {
+    async close() {
         if (this.port.isOpen) {
             this.port.close();
+            await this.wait(1000);
             console.log('Port closed');
         }
     }
 
-    open() {
+    async open() {
         if (!this.port.isOpen) {
             this.port.open();
+            this.parser = new SerialPort.parsers.Delimiter({ delimiter: [0x2a], includeDelimiter: true });
+            this.port.pipe(this.parser);
+            await this.wait(1000);
             console.log('Port opened');
         }
     }
@@ -77,12 +64,13 @@ class ResistanceSensor {
         if (!buffer) {
             return;
         }
-
+        console.log(buffer);
         let data = new Int32Array(buffer);
-        this.isFanTurnedOnVar = data[1];
-        this.isHeaterOnVar = data[0] === 1;
+        console.log(data);
+        this.isHeaterOn = data[0] === 1;
+        this.isFanOn = data[0] === 2;
 
-        if (data.length < 8) {
+        if (data.length < 5) {
             return;
         }
 
@@ -90,17 +78,22 @@ class ResistanceSensor {
             console.log('last measurement');
             return [0, 0];
         }
+
+        if (data[2] < 20) {
+            return;
+        }
+
         let temperature = data[2];
         let resistance = data[3] * 256 + data[4];
         return [temperature, resistance];
     }
 
-    isFanTurnedOn() {
-        return this.isFanTurnedOnVar;
+    isFanActive() {
+        return this.isFanOn;
     }
 
-    isHeaterOn() {
-        return this.isHeaterOnVar;
+    isHeaterActive() {
+        return this.isHeaterOn;
     }
 
     wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));

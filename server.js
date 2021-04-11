@@ -53,26 +53,29 @@ async function read(command) {
     if (command === 'stop') {
         isRunning = false;
         await sensor.write(command);
-        sensor.pause();
+        await sensor.close();
         return;
     }
 
     if (command.startsWith('sensor')) {
-        sensor.resume();
+        await sensor.open();
         await sensor.write('start');
         isRunning = true;
+        let previousResponse = undefined;
         while (isRunning) {
-            await sensor.write(command);
-            let response = sensor.read(11);
-            let previousResponse = undefined;
-            if(JSON.stringify(response) === JSON.stringify(previousResponse)) {
-                continue;
-            }
-            if (response) {
-                previousResponse = response;
-                broadCastData(response);
-                if (JSON.stringify(response) === JSON.stringify([0, 0])) {
-                    isRunning = false;
+            if (sensor.port.isOpen) {
+                await sensor.write(command);
+                let response = sensor.read(11);
+                if(JSON.stringify(response) === JSON.stringify(previousResponse)) {
+                    continue;
+                }
+                if (response) {
+                    previousResponse = response;
+                    broadCastData(response);
+                    if (JSON.stringify(response) === JSON.stringify([0, 0])) {
+                        await sensor.close();
+                        isRunning = false;
+                    }
                 }
             }
         }
