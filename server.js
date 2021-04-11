@@ -45,18 +45,23 @@ function handleCommand(message) {
     }
 
     let command = message.command;
-    read(command);
+    if (command === 'stop') {
+        handleStop(command);
+    }
+    if (command.startsWith('sensor')) {
+        handleSensor(command);
+    }
+}
+
+async function handleStop(command) {
+    isRunning = false;
+    await sensor.write(command);
+    await sensor.close();
+    return;
 }
 
 let isRunning = true;
-async function read(command) {
-    if (command === 'stop') {
-        isRunning = false;
-        await sensor.write(command);
-        await sensor.close();
-        return;
-    }
-
+async function handleSensor(command) {
     if (command.startsWith('sensor')) {
         await sensor.open();
         await sensor.write('start');

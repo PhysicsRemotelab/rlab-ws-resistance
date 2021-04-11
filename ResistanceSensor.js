@@ -40,6 +40,7 @@ class ResistanceSensor {
         if (this.port.isOpen) {
             this.port.write(this.commands.get(command));
             await this.wait(1000);
+            return true;
         }
     }
 
