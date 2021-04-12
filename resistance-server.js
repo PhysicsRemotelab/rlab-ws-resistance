@@ -1,8 +1,8 @@
 const http = require('http');
 const ws = require('ws');
-const ResistanceSensor = require("./ResistanceSensor.js");
+const Sensor = require("./Sensor.js");
 
-let sensor = new ResistanceSensor();
+let sensor = new Sensor();
 sensor.init('COM7');
 
 let server = http.createServer((req, res) => {
@@ -30,8 +30,8 @@ function handleConnection(client) {
         let position = connections.indexOf(client);
         connections.splice(position, 1);
         if (connections.length === 0) {
-            finished = true;
-            sensor.write('stop');
+            isRunning = false;
+            await sensor.write('stop');
         }
     });
 }

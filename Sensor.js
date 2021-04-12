@@ -1,6 +1,6 @@
 const SerialPort = require('serialport');
 
-class ResistanceSensor {
+class Sensor {
     init(com) {
         this.port = new SerialPort(com, {
             baudRate: 115200,
@@ -24,16 +24,11 @@ class ResistanceSensor {
     }
 
     async listPorts() {
-        let correctPort = null;
         await SerialPort.list().then(function(ports) {
             ports.forEach(function(port) {
                 console.log("Port: ", port);
-                if (port['serialNumber'] === 'A63WQY17') {
-                    correctPort = port['path'];
-                }
             });
         });
-        return correctPort;
     }
 
     async write(command) {
@@ -102,4 +97,4 @@ class ResistanceSensor {
     wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 }
 
-module.exports = ResistanceSensor;
+module.exports = Sensor;
