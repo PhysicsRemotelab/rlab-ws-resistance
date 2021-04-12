@@ -33,6 +33,12 @@ class Sensor {
 
     async write(command) {
         if (this.port.isOpen) {
+            if (command === 'stop') {
+                this.port.write(this.commands.get(command));
+                await this.wait(100);
+                this.close();
+                return;
+            }
             this.port.write(this.commands.get(command));
             await this.wait(1000);
             return true;
@@ -42,7 +48,7 @@ class Sensor {
     async close() {
         if (this.port.isOpen) {
             this.port.close();
-            await this.wait(1000);
+            await this.wait(100);
             console.log('Port closed');
         }
     }
@@ -52,7 +58,7 @@ class Sensor {
             this.port.open();
             this.parser = new SerialPort.parsers.Delimiter({ delimiter: [0x2a], includeDelimiter: true });
             this.port.pipe(this.parser);
-            await this.wait(1000);
+            await this.wait(100);
             console.log('Port opened');
         }
     }

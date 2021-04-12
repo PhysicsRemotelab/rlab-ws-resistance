@@ -31,7 +31,7 @@ function handleConnection(client) {
         connections.splice(position, 1);
         if (connections.length === 0) {
             isRunning = false;
-            await sensor.write('stop');
+            sensor.write('stop');
         }
     });
 }
