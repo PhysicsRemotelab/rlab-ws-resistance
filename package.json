@@ -1,15 +1,16 @@
 {
   "name": "rlab-ws-resistance",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node resistance-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.0.1",
+  "description": "Remote Control Laboratory for Measurements in Physics",
+  "author": "Toomas Tahves",
+  "license": "GPLV3",
+  "private": true,
+  "engines": {
+    "node": "14.x"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "scripts": {
+    "start": "node resistance-server.js"
+  },
   "dependencies": {
     "@types/ws": "^7.4.4",
     "serialport": "^9.1.0",
