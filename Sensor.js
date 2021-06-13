@@ -21,14 +21,8 @@ class Sensor {
         this.commands.set('sensor4', [0x24,0x01,0x47,0x01,0x34,0x7d,0x2a]);
         this.commands.set('sensor5', [0x24,0x01,0x47,0x01,0x35,0x7e,0x2a]);
         this.commands.set('sensor6', [0x24,0x01,0x47,0x01,0x36,0x7f,0x2a]);
-    }
 
-    async listPorts() {
-        await SerialPort.list().then(function(ports) {
-            ports.forEach(function(port) {
-                console.log("Port: ", port);
-            });
-        });
+        console.log('Initialized serial port', com);
     }
 
     async write(command) {

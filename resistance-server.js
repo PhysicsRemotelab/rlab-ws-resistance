@@ -2,13 +2,21 @@ const http = require('http');
 const ws = require('ws');
 const Sensor = require("./Sensor.js");
 
+const httpPort = process.env.npm_config_http_port;
+const serialport = process.env.npm_config_serial_port;
+
+if (!httpPort || !serialport) {
+    console.log('Missing required parameters');
+    return;
+}
+
 let sensor = new Sensor();
-sensor.init('COM7');
+sensor.init(serialport);
 
 let server = http.createServer((req, res) => {
     res.writeHead(200);
 });
-server.listen(5003, () => console.log('Http running.'));
+server.listen(httpPort, () => console.log('Started server on', httpPort));
 const wss = new ws.Server({server, path: '/resistance'});
 
 wss.on('connection', handleConnection);
