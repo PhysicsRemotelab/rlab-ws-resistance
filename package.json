@@ -12,8 +12,8 @@
     "start": "node resistance-server.js"
   },
   "dependencies": {
-    "@types/ws": "^7.4.4",
-    "serialport": "^9.1.0",
-    "ws": "^7.4.6"
+    "@types/ws": "^8.5.3",
+    "serialport": "^10.4.0",
+    "ws": "^8.5.0"
   }
 }

@@ -1,13 +1,15 @@
-const SerialPort = require('serialport');
+const { SerialPort } = require('serialport');
+const { DelimiterParser } = require('@serialport/parser-delimiter');
 
 class Sensor {
     init(com) {
-        this.port = new SerialPort(com, {
+        this.port = new SerialPort({
+            path: com,
             baudRate: 115200,
             lock: false
         });
 
-        this.parser = new SerialPort.parsers.Delimiter({ delimiter: [0x2a], includeDelimiter: true });
+        this.parser = new DelimiterParser({ delimiter: [0x2a], includeDelimiter: true });
         this.port.pipe(this.parser);
 
         this.commands = new Map();
@@ -50,7 +52,7 @@ class Sensor {
     async open() {
         if (!this.port.isOpen) {
             this.port.open();
-            this.parser = new SerialPort.parsers.Delimiter({ delimiter: [0x2a], includeDelimiter: true });
+            this.parser = new DelimiterParser({ delimiter: [0x2a], includeDelimiter: true });
             this.port.pipe(this.parser);
             await this.wait(100);
             console.log('Port opened');
