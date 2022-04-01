@@ -2,7 +2,7 @@ const http = require('http');
 const ws = require('ws');
 const Sensor = require("./Sensor.js");
 
-const httpPort = process.env.npm_config_http_port ?? 5003;
+const httpPort = process.env.npm_config_http_port ?? 5005;
 const serialport = process.env.npm_config_serial_port ?? 'COM6';
 
 let sensor = new Sensor();
